@@ -260,7 +260,7 @@ function loop(ts) {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  themeBtn.textContent = theme === 'light' ? 'Tema oscuro' : 'Tema claro';
+  themeBtn.textContent = theme === 'light' ? 'Dark' : 'Light';
   gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
   if (current) draw(); // el loop está cancelado en pausa/game over
 }
