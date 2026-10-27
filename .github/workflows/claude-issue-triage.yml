@@ -65,7 +65,7 @@ jobs:
 
             5. Publica el diagnóstico como UN solo comentario que se actualiza en cada edición:
                `gh issue comment ${{ github.event.issue.number }} --edit-last --create-if-none --body "..."`
-               El cuerpo debe empezar con `<!-- claude-triage -->` y estar en español, con esta estructura:
+               El cuerpo debe empezar con `<!-- claude-triage -->` y estar en español. Todo lo que comentes debe estar en formato Markdown que GitHub renderice correctamente (GFM): encabezados `##`, listas, negritas, bloques de código con triple backtick y lenguaje (```js), código en línea con backticks, tablas si aplican y saltos de línea reales (no `\n` literales). Estructura:
 
                ## 🔎 Diagnóstico automático
                **Resumen:** qué se reporta, en 1-2 frases.
