@@ -11,7 +11,7 @@ const COLORS = [
   '#ba68c8', // T - purple
   '#81c784', // S - green
   '#e57373', // Z - red
-  '#7986cb', // J - indigo
+  '#90caf9', // J - pale blue
   '#ffb74d', // L - orange
 ];
 
@@ -39,7 +39,9 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const themeBtn = document.getElementById('theme-btn');
 
+let gridColor = '#22222e';
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
 function createBoard() {
@@ -169,7 +171,7 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -256,6 +258,26 @@ function loop(ts) {
   animId = requestAnimationFrame(loop);
 }
 
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeBtn.textContent = theme === 'light' ? 'Tema oscuro' : 'Tema claro';
+  gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+  if (current) draw(); // el loop está cancelado en pausa/game over
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  try { localStorage.setItem('theme', nextTheme); } catch (e) { /* almacenamiento no disponible */ }
+  applyTheme(nextTheme);
+}
+
+function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) { /* ignorar */ }
+  const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(saved || (preferLight ? 'light' : 'dark'));
+}
+
 function init() {
   board = createBoard();
   score = 0;
@@ -276,6 +298,7 @@ function init() {
 
 document.addEventListener('keydown', e => {
   if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyT') { toggleTheme(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -300,5 +323,10 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+themeBtn.addEventListener('click', () => {
+  toggleTheme();
+  themeBtn.blur(); // evita que Space/Enter reactiven el botón durante el juego
+});
 
+initTheme();
 init();
