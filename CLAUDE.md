@@ -23,7 +23,8 @@ All logic lives in `game.js` (single script, `'use strict'`, global functions an
 - **Collision**: `collide(shape, ox, oy)` is the single check used for movement, rotation, gravity, ghost, and spawn (spawn collision → `endGame`). Cells with `y < 0` are allowed.
 - **Loop**: `requestAnimationFrame` loop accumulates `dt` into `dropAccum`; when ≥ `dropInterval`, piece falls or `lockPiece()` (merge → clearLines → spawn). `draw()` redraws everything every frame. Pause/game over cancel the RAF via `animId`; resume restarts `loop` with a fresh `lastTime`.
 - **Scoring/level**: `LINE_SCORES[cleared] * level`; soft drop +1/row, hard drop +2/row; `level = floor(lines/10)+1`; `dropInterval = max(100, 1000 - (level-1)*90)`. `updateHUD()` must be called after score changes.
-- `init()` resets all state and is also the restart handler.
+- `init()` resets all state and is also the restart handler. On load the game does NOT start: `gameOver = true`, `started = false`, `showStartScreen()` shows the overlay (title, records, "Jugar" = `#restart-btn`); `init()` starts the RAF loop.
+- **Records**: `localStorage` key `records` = `{ top: [{name, score, lines, date}] (max 5, desc), bestCombo, maxLines }`, always accessed via `loadRecords`/`saveRecords` (try/catch). `endGame()` updates bestCombo/maxLines, shows `#name-form` if the score qualifies, and `submitRecord` inserts + highlights the entry (`li.highlight`). Combo = consecutive locks clearing ≥1 line (`combo`, `runBestCombo`; reset in `init()`). The keydown handler ignores events from `#name-input`. Extra overlay ids: `name-form`, `name-input`, `save-btn`, `records-box`, `records-list`, `records-extra`, `reset-records-btn`.
 
 ## Coupled constants
 
