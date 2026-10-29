@@ -210,3 +210,60 @@ kbd {
 #restart-btn:hover {
   background: var(--accent-hover);
 }
+
+/* ---- Menú de pausa ---- */
+.pause-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.pause-group.hidden,
+#controls-list.hidden {
+  display: none;
+}
+
+#resume-btn,
+#controls-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+#controls-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+#resume-btn:hover { background: var(--accent-hover); }
+
+#controls-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  text-align: left;
+}
+
+.level-pick {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.level-pick select {
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
