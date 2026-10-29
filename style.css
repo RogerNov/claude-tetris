@@ -141,6 +141,23 @@ kbd {
   color: var(--kbd-text);
 }
 
+/* ---- Skins ---- */
+html[data-skin="neon"][data-theme] { --grid: #14142a; }
+html[data-skin="neon"] #board,
+html[data-skin="neon"] #next-canvas { background: #000; }
+
+#skin-select {
+  background: var(--kbd-bg);
+  color: var(--text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#skin-select:hover { border-color: var(--accent); }
+
 /* ---- Botón de tema ---- */
 #theme-btn {
   background: var(--kbd-bg);

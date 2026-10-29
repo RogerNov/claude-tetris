@@ -4,18 +4,6 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
 
-const COLORS = [
-  null,
-  '#4dd0e1', // I - cyan
-  '#ffd54f', // O - yellow
-  '#ba68c8', // T - purple
-  '#81c784', // S - green
-  '#e57373', // Z - red
-  '#90caf9', // J - pale blue
-  '#ffb74d', // L - orange
-  '#b0bec5', // N - tuerca (gris metal)
-];
-
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -43,6 +31,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeBtn = document.getElementById('theme-btn');
+const skinSelect = document.getElementById('skin-select');
 
 let gridColor = '#22222e';
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
@@ -162,16 +151,105 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
-function drawBlock(context, x, y, colorIndex, size, alpha) {
-  if (!colorIndex) return;
-  const color = COLORS[colorIndex];
-  context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
+// ---- Skins ----
+// colors: índices 1–8 (igual que PIECES). drawBlock(context, x, y, colorIndex, size, alpha)
+function drawBlockRetro(context, x, y, colorIndex, size, alpha) {
+  context.globalAlpha = alpha;
+  context.fillStyle = COLORS[colorIndex];
   context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
   context.fillStyle = 'rgba(255,255,255,0.12)';
   context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
-  context.globalAlpha = 1;
+}
+
+function drawBlockNeon(context, x, y, colorIndex, size, alpha) {
+  const color = COLORS[colorIndex];
+  context.globalAlpha = alpha < 1 ? 0.5 : 1; // el fantasma debe verse sobre fondo negro
+  context.shadowColor = color;
+  context.shadowBlur = 12;
+  context.fillStyle = 'rgba(0,0,0,0.85)';
+  context.fillRect(x * size + 3, y * size + 3, size - 6, size - 6);
+  context.strokeStyle = color;
+  context.lineWidth = 2;
+  context.strokeRect(x * size + 3, y * size + 3, size - 6, size - 6);
+  context.shadowBlur = 0;
+  context.shadowColor = 'transparent';
+  context.fillStyle = color;
+  context.globalAlpha = alpha * 0.35;
+  context.fillRect(x * size + 6, y * size + 6, size - 12, size - 12);
+}
+
+function roundedRectPath(context, x, y, w, h, r) {
+  context.beginPath();
+  context.moveTo(x + r, y);
+  context.arcTo(x + w, y, x + w, y + h, r);
+  context.arcTo(x + w, y + h, x, y + h, r);
+  context.arcTo(x, y + h, x, y, r);
+  context.arcTo(x, y, x + w, y, r);
+  context.closePath();
+}
+
+function drawBlockPastel(context, x, y, colorIndex, size, alpha) {
+  context.globalAlpha = alpha;
+  context.fillStyle = COLORS[colorIndex];
+  roundedRectPath(context, x * size + 2, y * size + 2, size - 4, size - 4, size * 0.28);
+  context.fill();
+  context.fillStyle = 'rgba(255,255,255,0.35)';
+  roundedRectPath(context, x * size + 6, y * size + 5, size - 12, 4, 2);
+  context.fill();
+}
+
+function drawBlockPixel(context, x, y, colorIndex, size, alpha) {
+  const px = x * size, py = y * size, u = size / 6;
+  context.globalAlpha = alpha;
+  context.fillStyle = COLORS[colorIndex];
+  context.fillRect(px, py, size, size);
+  // bisel claro (arriba/izquierda) y oscuro (abajo/derecha)
+  context.fillStyle = 'rgba(255,255,255,0.35)';
+  context.fillRect(px, py, size, u);
+  context.fillRect(px, py, u, size);
+  context.fillStyle = 'rgba(0,0,0,0.35)';
+  context.fillRect(px, py + size - u, size, u);
+  context.fillRect(px + size - u, py, u, size);
+  // textura de píxeles
+  context.fillStyle = 'rgba(0,0,0,0.18)';
+  context.fillRect(px + 2 * u, py + 2 * u, u, u);
+  context.fillRect(px + 3 * u, py + 3 * u, u, u);
+  context.fillStyle = 'rgba(255,255,255,0.25)';
+  context.fillRect(px + 3 * u, py + 2 * u, u, u);
+  context.fillRect(px + 2 * u, py + 3 * u, u, u);
+}
+
+const SKINS = {
+  retro: {
+    label: 'Retro',
+    colors: [null, '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784', '#e57373', '#90caf9', '#ffb74d', '#b0bec5'],
+    drawBlock: drawBlockRetro,
+  },
+  neon: {
+    label: 'Neón',
+    colors: [null, '#00f0ff', '#fff700', '#d500f9', '#39ff14', '#ff1744', '#2979ff', '#ff9100', '#e0e0e0'],
+    drawBlock: drawBlockNeon,
+  },
+  pastel: {
+    label: 'Pastel',
+    colors: [null, '#a8e6ef', '#fff1b8', '#d9b8ec', '#b8e6c1', '#f5b7b1', '#b9d6f2', '#fbd1a2', '#d3dce0'],
+    drawBlock: drawBlockPastel,
+  },
+  pixel: {
+    label: 'Pixel art',
+    colors: [null, '#29b6d6', '#f2c200', '#9c3fb5', '#43a047', '#d32f2f', '#3f7fd6', '#ef8a00', '#8d9aa0'],
+    drawBlock: drawBlockPixel,
+  },
+};
+const DEFAULT_SKIN = 'retro';
+let COLORS = SKINS[DEFAULT_SKIN].colors;
+let currentSkin = DEFAULT_SKIN;
+
+function drawBlock(context, x, y, colorIndex, size, alpha) {
+  if (!colorIndex) return;
+  context.save();
+  SKINS[currentSkin].drawBlock(context, x, y, colorIndex, size, alpha ?? 1);
+  context.restore(); // restaura alpha, shadowBlur y shadowColor
 }
 
 // Círculo en el hueco central de la tuerca (shape 3×3, centro en [1][1])
@@ -301,6 +379,32 @@ function initTheme() {
   applyTheme(saved || (preferLight ? 'light' : 'dark'));
 }
 
+function applySkin(name) {
+  if (!SKINS[name]) name = DEFAULT_SKIN;
+  currentSkin = name;
+  COLORS = SKINS[name].colors;
+  document.documentElement.dataset.skin = name;
+  skinSelect.value = name;
+  gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+  if (current) {
+    draw(); // el loop está cancelado en pausa/game over
+    if (gameOver) nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    else drawNext();
+  }
+}
+
+function initSkin() {
+  for (const key of Object.keys(SKINS)) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = SKINS[key].label;
+    skinSelect.appendChild(opt);
+  }
+  let saved = null;
+  try { saved = localStorage.getItem('skin'); } catch (e) { /* ignorar */ }
+  applySkin(saved);
+}
+
 function init() {
   board = createBoard();
   score = 0;
@@ -320,6 +424,7 @@ function init() {
 }
 
 document.addEventListener('keydown', e => {
+  if (document.activeElement === skinSelect && e.code !== 'Tab') skinSelect.blur();
   if (e.code === 'KeyP') { togglePause(); return; }
   if (e.code === 'KeyT') { toggleTheme(); return; }
   if (paused || gameOver) return;
@@ -351,5 +456,12 @@ themeBtn.addEventListener('click', () => {
   themeBtn.blur(); // evita que Space/Enter reactiven el botón durante el juego
 });
 
+skinSelect.addEventListener('change', () => {
+  try { localStorage.setItem('skin', skinSelect.value); } catch (e) { /* almacenamiento no disponible */ }
+  applySkin(skinSelect.value);
+  skinSelect.blur(); // evita que Space/flechas cambien el selector durante el juego
+});
+
 initTheme();
+initSkin();
 init();

@@ -25,6 +25,10 @@ All logic lives in `game.js` (single script, `'use strict'`, global functions an
 - **Scoring/level**: `LINE_SCORES[cleared] * level`; soft drop +1/row, hard drop +2/row; `level = floor(lines/10)+1`; `dropInterval = max(100, 1000 - (level-1)*90)`. `updateHUD()` must be called after score changes.
 - `init()` resets all state and is also the restart handler.
 
+## Skins
+
+`SKINS` (`retro`, `neon`, `pastel`, `pixel`) = `{ label, colors[1–8], drawBlock }`. `COLORS` is a `let` pointing at the current skin's colors; `drawBlock` wraps the skin fn in `save/restore` (resets alpha/shadow). `applySkin(name)` sets `data-skin` on `<html>` (CSS overrides canvas bg/`--grid` for neon), re-reads `--grid`, redraws board + next. Persisted in `localStorage['skin']`. New id: `skin-select` (options filled by `initSkin`). Coexists with light/dark theme.
+
 ## Coupled constants
 
 - `COLS × BLOCK` / `ROWS × BLOCK` must match `<canvas id="board" width height>` (300×600).
